@@ -1,0 +1,197 @@
+﻿@model Crud.Models.User;
+@{
+    ViewData["Title"] = "Home Page";
+    var baseUrl = Url.Content("~/Uploads/");
+}
+
+<style>
+
+    .image-upload-container {
+        position: relative;
+        width: 100%;
+        border: 2px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .image-preview {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 150px;
+        overflow: hidden;
+        position: relative;
+        margin-top: 10px;
+    }
+
+    .image-preview img {
+        max-width: 100%;
+        max-height: 100%;
+        border-radius: 4px;
+    }
+
+</style>
+
+<div class="container mt-5">
+    <div class="row">
+        <form id="userRegistration">
+            <div class="form-group row">
+                <label for=" " class="col-sm-3">Id</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" id="txtId" readonly>
+                </div>
+                <div class="col-sm-5">
+                    <label for=" " class="col-form-label" style="color:red">Auto Generated *</label>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for=" " class="col-sm-3">Name</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="txtName" >
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for=" " class="col-sm-3">Password</label>
+                <div class="col-sm-9">
+                    <input type="password" class="form-control" id="txtPassword">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for=" " class="col-sm-3">Address</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="txtAddress">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for=" " class="col-sm-3">Country</label>
+                <div class="col-sm-9">
+                    <select class="form-control" name="txtTruckType" id="txtCountry">
+                        <option value="" disabled selected>select country</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for=" " class="col-sm-3">Profile</label>
+                <div class="col-sm-9">
+                    <div class="image-upload-container">
+                        <input type="file" id="imageUpload" class="form-control"accept="image/*">
+                        <div class="image-preview" id="imagePreview">
+                            <span>Upload an image</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btnSubmit" style="float:right"><i class="fa fa-save mr-2"></i>Save Changes</button>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        var Country = JSON.parse('@Html.Raw(ViewBag.Country)');
+
+        if ('@Html.Raw(ViewBag.EditMode)' != "") {
+            var EditMode = JSON.parse('@Html.Raw(ViewBag.EditMode)');
+            console.log("EditMode", EditMode);
+            if (EditMode != "") {
+               // debugger;
+                $('#txtId').val(EditMode["UserId"]);
+                $('#txtName').val(EditMode["Username"]);
+                $('#txtAddress').val(EditMode["Address"]);
+                $('#txtPassword').val(EditMode["Password"]);
+                $('#txtCountry').val(EditMode["CountryId"]);
+                const baseUrl = window.location.origin;
+                if (EditMode["PictureProfileUrl"]) {
+                    $('#imagePreview').html(`<img src="${baseUrl}${EditMode["PictureProfileUrl"]}" alt="User Image" style="max-width: 100px; max-height: 100px;" />`);
+                }
+
+            }
+        }
+
+        var ddlCountry = $("#txtCountry");
+        $.each(Country, (index, country) => ddlCountry.append($('<option></option>').val(country.CountryId).text(country.CountryName)));
+
+        document.getElementById('imageUpload').addEventListener('change', function () {
+            const file = this.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = e => document.getElementById('imagePreview').innerHTML = `<img src="${e.target.result}" />`;
+                reader.readAsDataURL(file);
+            } else {
+                document.getElementById('imagePreview').innerHTML = '<span>Upload an image</span>';
+            }
+        });
+
+        $("#userRegistration").on("submit", function (event) {
+            //debugger;
+            console.log("in");
+            event.preventDefault();
+
+            var $btn = $(".btnSubmit");
+            $btn.prop("disabled", true).text("Please Wait...");
+
+            var Id = $('#txtId').val();
+            var Name = $('#txtName').val();
+            var Address = $('#txtAddress').val();
+            var Password = $('#txtPassword').val();
+            var CountryId = $('#txtCountry').val();
+            var Image = $('#imageUpload')[0].files[0]; // get the file object
+
+            if (!Name || !Address || !Password || !CountryId) {
+                showMessage("Please Fill Mandatory Fields", "error");
+                resetButton($btn);
+                return;
+            }
+
+            if ('@Html.Raw(ViewBag.EditMode)' == "") {
+                if (!Image) {
+                    showMessage("Please Fill Mandatory Fields", "error");
+                    resetButton($btn);
+                    return;
+                }
+            }
+            var formData = new FormData();
+            formData.append("UserId", Id);
+            formData.append("UserName", Name);
+            formData.append("Address", Address);
+            formData.append("Password", Password);
+            formData.append("CountryId", CountryId);
+
+            if (Image) {
+                formData.append("ImageFile", Image);
+            }
+
+            $.ajax({
+                url: '/Home/SaveUser',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    console.log("response", response);
+                    if (response.errorCode == 200) {
+                        showMessage("Record Saved Successfully", "success");
+                        setTimeout(function () {
+                            window.location = '/Home/Grid';
+                        }, 500);
+                    }
+                    else {
+                        alert("error not save");
+                    }
+
+                },
+            });
+
+        });
+
+        function resetButton($btn) {
+            $btn.prop("disabled", false).text("Save Changes");
+        }
+
+      
+
+
+    </script>
+}

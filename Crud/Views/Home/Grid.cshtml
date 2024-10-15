@@ -1,0 +1,64 @@
+﻿
+
+<div class="container">
+    <div class="row">
+        <div class="mt-5">
+            <table style="border-collapse: collapse; width: 100%;">
+                <thead>
+                    <tr style="border-bottom: 1px solid black;">
+                        <th style="padding: 10px;">Id</th>
+                        <th style="padding: 10px;">Name</th>
+                        <th style="padding: 10px;">Password</th>
+                        <th style="padding: 10px;">Address</th>
+                        <th style="padding: 10px;">Country</th>
+                        <th style="padding: 10px;">Profile</th>
+                        <th style="padding: 10px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="gridUsers">
+                    @if (ViewBag.Record != null)
+                    {
+                        foreach (var user in ViewBag.Record)
+                        {
+                            <tr>
+                                <td style="padding: 10px;">@user["UserId"]</td>
+                                <td style="padding: 10px;">@user["Username"]</td>
+                                <td style="padding: 10px;">@user["Password"]</td>
+                                <td style="padding: 10px;">@user["Address"]</td>
+                                <td style="padding: 10px;">@user["CountryName"]</td>
+                                <td style="padding: 10px;" >
+                                    <img src="@user["PictureProfileURL"]" class="rounded-circle"  width="50" height="50"/>
+                                </td>
+                                <td style="padding: 10px;">
+                                    <button type="button" class="btn btn-primary" onclick="edit('@user["UserId"]')">Edit</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <div class="display-flex justify-content-center">No Data</div>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        var Country = JSON.parse('@Html.Raw(ViewBag.Record)');
+        console.log("Country", Country);
+
+
+        function edit(id){
+            window.location = `/Home/Index?Id=${id}`;
+        }
+
+
+
+    </script>
+}
+
