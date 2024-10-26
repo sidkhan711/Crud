@@ -11,5 +11,8 @@ namespace Crud.Models
         public string? Address { get; set; }
         public int? CountryId { get; set; }
         public string? PictureProfileUrl { get; set; }
+        public Guid? AccountNumber { get; set; }
+        public int? BankId { get; set; }
+        public long? InitialDeposit { get; set; }
     }
 }

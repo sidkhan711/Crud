@@ -6,6 +6,8 @@
 
 <style>
 
+
+
     .image-upload-container {
         position: relative;
         width: 100%;
@@ -37,14 +39,24 @@
     <div class="row">
         <form id="userRegistration">
             <div class="form-group row">
-                <label for=" " class="col-sm-3">Id</label>
-                <div class="col-sm-3">
+                <label for=" " class="col-sm-1">Id</label>
+                <div class="col-sm-1">
                     <input type="text" class="form-control" id="txtId" readonly>
                 </div>
-                <div class="col-sm-5">
+                <div class="col-sm-2">
                     <label for=" " class="col-form-label" style="color:red">Auto Generated *</label>
                 </div>
+
+                <label for=" " class="col-sm-2">Account No.</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" id="txtAccount" readonly>
+                </div>
+                <div class="col-sm-3">
+                    <label for=" " class="col-form-label" style="color:red">System Generated *</label>
+                </div>
             </div>
+
+            
             <div class="form-group row">
                 <label for=" " class="col-sm-3">Name</label>
                 <div class="col-sm-9">
@@ -52,9 +64,9 @@
                 </div>
             </div>
             <div class="form-group row">
-                <label for=" " class="col-sm-3">Password</label>
+                <label for=" " class="col-sm-3">Pin</label>
                 <div class="col-sm-9">
-                    <input type="password" class="form-control" id="txtPassword">
+                    <input type="text" class="form-control" id="txtPassword">
                 </div>
             </div>
             <div class="form-group row">
@@ -72,6 +84,20 @@
                 </div>
             </div>
             <div class="form-group row">
+                <label for=" " class="col-sm-3">Bank</label>
+                <div class="col-sm-9">
+                    <select class="form-control"  id="txtBank">
+                        <option value="" disabled selected>select Bank</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for=" " class="col-sm-3">Initial Deposit Balance</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="txtInitial">
+                </div>
+            </div>
+            <div class="form-group row">
                 <label for=" " class="col-sm-3">Profile</label>
                 <div class="col-sm-9">
                     <div class="image-upload-container">
@@ -82,7 +108,7 @@
                     </div>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary btnSubmit" style="float:right"><i class="fa fa-save mr-2"></i>Save Changes</button>
+            <button type="submit" class="btn btn-primary btnSubmit" style="float:right"><i class="fa fa-save mr-2"></i>Open</button>
         </form>
     </div>
 </div>
@@ -91,17 +117,21 @@
 @section Scripts {
     <script>
         var Country = JSON.parse('@Html.Raw(ViewBag.Country)');
-
+        var Bank = JSON.parse('@Html.Raw(ViewBag.Bank)');
+        console.log("Bank", Bank);
         if ('@Html.Raw(ViewBag.EditMode)' != "") {
             var EditMode = JSON.parse('@Html.Raw(ViewBag.EditMode)');
             console.log("EditMode", EditMode);
             if (EditMode != "") {
                // debugger;
                 $('#txtId').val(EditMode["UserId"]);
+                $('#txtAccount').val(EditMode["AccountNumber"]);
                 $('#txtName').val(EditMode["Username"]);
                 $('#txtAddress').val(EditMode["Address"]);
                 $('#txtPassword').val(EditMode["Password"]);
                 $('#txtCountry').val(EditMode["CountryId"]);
+                $('#txtBank').val(EditMode["BankId"]);
+                $('#txtInitial').val(EditMode["InitialDeposit"]);
                 const baseUrl = window.location.origin;
                 if (EditMode["PictureProfileUrl"]) {
                     $('#imagePreview').html(`<img src="${baseUrl}${EditMode["PictureProfileUrl"]}" alt="User Image" style="max-width: 100px; max-height: 100px;" />`);
@@ -112,6 +142,9 @@
 
         var ddlCountry = $("#txtCountry");
         $.each(Country, (index, country) => ddlCountry.append($('<option></option>').val(country.CountryId).text(country.CountryName)));
+        var ddlBank = $("#txtBank");
+        $.each(Bank, (index, bank) => ddlBank.append($('<option></option>').val(bank.Id).text(bank.Bank1)));
+
 
         document.getElementById('imageUpload').addEventListener('change', function () {
             const file = this.files[0];
@@ -137,6 +170,9 @@
             var Address = $('#txtAddress').val();
             var Password = $('#txtPassword').val();
             var CountryId = $('#txtCountry').val();
+            var Account = $('#txtAccount').val();
+            var BankId = $('#txtBank').val();
+            var Initial = $('#txtInitial').val();
             var Image = $('#imageUpload')[0].files[0]; // get the file object
 
             if (!Name || !Address || !Password || !CountryId) {
@@ -158,11 +194,13 @@
             formData.append("Address", Address);
             formData.append("Password", Password);
             formData.append("CountryId", CountryId);
+            formData.append("BankId", BankId);
+            formData.append("InitialDeposit", Initial);
 
             if (Image) {
                 formData.append("ImageFile", Image);
             }
-
+            console.log("formData", formData);
             $.ajax({
                 url: '/Home/SaveUser',
                 type: 'POST',

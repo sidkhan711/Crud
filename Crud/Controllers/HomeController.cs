@@ -25,6 +25,7 @@ namespace Crud.Controllers
         {
             var result = _hassoftRecordContext.Countries.ToList();
             ViewBag.Country = JsonConvert.SerializeObject(result);
+            ViewBag.Bank = JsonConvert.SerializeObject(_hassoftRecordContext.Banks.ToList());
             if (Id.HasValue)
             {
                 var result1 = _hassoftRecordContext.Users.Where(u => u.UserId == Id).FirstOrDefault();
@@ -61,6 +62,7 @@ namespace Crud.Controllers
             {
                 var NewId = (_hassoftRecordContext.Users.Max(u => (int?)u.UserId) ?? 0) + 1;
                 user.UserId = NewId;
+                user.AccountNumber = Guid.NewGuid();
                 _hassoftRecordContext.Users.Add(user);
                 _hassoftRecordContext.SaveChanges();
 
